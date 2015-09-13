@@ -1,0 +1,81 @@
+1)C++ code of the data ­structure of the update packet structure.
+/*Update Packet Entry Structure*/
+struct entry
+{
+	struct in_addr ip_address;
+	uint16_t port;
+	uint16_t padding;
+	uint16_t server_id;
+	uint16_t cost;
+};
+/*End of Update Packet Entry Structure*/
+
+/*Update Packet Structure*/
+struct packet 
+{
+	uint16_t update_fields;
+	uint16_t port;
+	struct in_addr ip_address;
+	struct entry *entries;
+};
+/*End of Update Packet Structure*/
+
+2)C++ code of the data structure of the routing table.
+/*Routing Table Structure*/
+struct routing_table
+{
+	uint16_t server_id;
+	struct in_addr ip_address;
+	uint16_t port;
+	uint16_t next_hop;
+	uint16_t cost;
+
+	bool isNeighbour;
+	int time_since_update;
+};
+/*End of Routing Table Structure*/
+The initial matrix for bellman-ford function will be derived from this data structure and will be later updates as routing updates are received.
+
+3)Pseudocode for the main select loop. & 4)Strategy to implement multiple timers for each of the neighbors in the network graph.
+
+timeout=set from command line;
+timeout_local=0;
+for (;;)																				
+{
+	select_return = select(maximumFileD + 1, &readSet, NULL, NULL, 1);	
+	if(select_return==-1)																
+	{
+		cerr << "select() Failed. "<< endl;
+	}
+	else if (select_return==1)		//got something													
+	{
+		if (FD_ISSET(0, &readSet))
+		{																				
+			/*Got user input, take appropriate action*/
+		}
+		else if(FD_ISSET(listener,&readSet))												
+		{
+			/*Got UDP update packet, update data structure, run bellman ford
+			identify which neighbour sent the update and set for that neighbour time_since_update=0*/
+		}
+	}
+	else if(select_return==0)		//select timeout													    
+	{
+		timeout_local++;
+		if(timeout_local==timeout)
+		{
+			sendupdate();
+			timeout_local=0;
+		}
+		for(each neighbour)
+		{	
+			time_since_update++ 
+			if(time_since_update==(3*timeout))
+			{	
+				cost=INFINITY;
+				/*update data structure, run bellman ford*/
+			} 
+		}																			
+	}
+}
+
